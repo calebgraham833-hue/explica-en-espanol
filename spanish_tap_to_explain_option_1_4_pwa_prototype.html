@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Explica en Español — Toque Rápido</title>
+  <meta name="description" content="Toca/Comparte una palabra o frase y recibe definición en español + explicación sencilla." />
+  <!-- App style (no libs) -->
+  <style>
+    :root { --radius: 16px; }
+    html, body { height: 100%; background: #0b0c10; color: #e8e8e8; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; display: grid; place-items: center; }
+    .app { max-width: 800px; width: 100%; padding: 20px; box-sizing: border-box; }
+    .card { background: #111318; border: 1px solid #1f2330; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.25); overflow: hidden; }
+    .hdr { padding: 18px 20px; border-bottom: 1px solid #1f2330; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+    .title { font-weight: 700; letter-spacing: .3px; font-size: 1.05rem; }
+    .badge { font-size: .75rem; opacity: .8; padding: 4px 8px; border: 1px solid #3b445a; border-radius: 999px; }
+    .body { padding: 16px; display: grid; gap: 14px; }
+    .row { display: grid; gap: 8px; }
+    textarea, input[type=text] { background: #0d1117; color: #eaeaea; border: 1px solid #2a2f3d; border-radius: 12px; padding: 12px 14px; font-size: 16px; resize: vertical; min-height: 60px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button { border: 1px solid #405071; background: #121826; color: #e8e8e8; border-radius: 12px; padding: 10px 14px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #172135; }
+    .grid { display: grid; gap: 12px; }
+    .grid.cols { grid-template-columns: 1fr 1fr; }
+    .panel { border: 1px solid #1f2330; border-radius: 12px; padding: 12px; background: #0e131d; }
+    .panel h3 { margin: 0 0 8px 0; font-size: .95rem; opacity: .9; }
+    .small { font-size: .85rem; opacity: .9; }
+    .muted { opacity: .65; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed #2b344a; padding: 6px 10px; border-radius: 999px; font-size: .82rem; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: .85em; padding: 1px 6px; border: 1px solid #2a2f3d; border-radius: 6px; background: #0d1117; }
+    a { color: #b2c7ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .list { padding-left: 18px; }
+    .list li { margin: 4px 0; }
+    .hr { height: 1px; background: #1f2330; margin: 10px 0; }
+    .code { white-space: pre-wrap; background: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #2a2f3d; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono'; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="card">
+      <div class="hdr">
+        <div class="title">Explica en Español — Toque Rápido</div>
+        <div class="badge" id="status">listo</div>
+      </div>
+      <div class="body">
+        <div class="row">
+          <label for="q" class="small">Pega una palabra o frase en español (o usa Compartir desde tu lector)</label>
+          <textarea id="q" placeholder="p. ej., \"ensimismar\" o una frase con la palabra seleccionada..."></textarea>
+        </div>
+        <div class="actions">
+          <button id="btn-def">Definir</button>
+          <button id="btn-exp">Explicación sencilla</button>
+          <button id="btn-both">Definir + Explicar</button>
+          <button id="btn-ej">Ejemplo</button>
+          <span class="pill">Nivel: 
+            <select id="nivel">
+              <option value="basico">básico</option>
+              <option value="intermedio">intermedio</option>
+            </select>
+          </span>
+        </div>
+        <div class="grid cols">
+          <section class="panel" id="def-panel">
+            <h3>Definiciones (Wikcionario)</h3>
+            <div id="defs" class="small muted">Sin resultados aún.</div>
+          </section>
+          <section class="panel" id="exp-panel">
+            <h3>Explicación sencilla (generada)</h3>
+            <div id="exp" class="small muted">Sin resultados aún.</div>
+          </section>
+        </div>
+        <section class="panel">
+          <h3>Consejos</h3>
+          <ul class="list small">
+            <li><span class="kbd">Android</span>: añade esta página a la pantalla de inicio y comparte texto desde Kindle/Libros → “Explica en Español”.</li>
+            <li><span class="kbd">iPad/iPhone</span>: crea un Atajo que abra esta URL con <em>?q=</em> + texto copiado.</li>
+            <li>Esto busca definiciones monolingües en <strong>es.wiktionary.org</strong> y genera una paráfrasis simple para comprensión rápida.</li>
+          </ul>
+          <div class="hr"></div>
+          <details>
+            <summary class="small">Ver cómo funciona</summary>
+            <div class="small muted">La app usa la API pública de MediaWiki para extraer definiciones del Wikcionario en español y un simplificador local (reglas) para producir explicaciones con vocabulario más común. No requiere claves ni servicios de terceros.</div>
+          </details>
+        </section>
+        <section class="panel">
+          <h3>Integración rápida</h3>
+          <div class="small">
+            <p><strong>Android (Share Target)</strong> — Chrome puede compartir texto a una PWA que sea objetivo de compartir. Si alojas este archivo con HTTPS y manifiesto, podrás recibir texto desde cualquier app.</p>
+            <p><strong>iOS (Atajo)</strong> — Crea un Atajo “Explica en Español”: Entrada → Obtener texto → URL <span class="kbd">https://TU_DOMINIO/explica.html?q=[[Texto]]</span> → Abrir URL.</p>
+          </div>
+        </section>
+        <section class="panel">
+          <h3>Modo avanzado (opcional)</h3>
+          <div class="small">Si añades una clave de API de tu LLM favorito, la app puede generar explicaciones más ricas. Pega la clave abajo (se guarda solo en tu navegador) y activa “Explicación avanzada”.</div>
+          <div class="row">
+            <input id="apiKey" type="text" placeholder="Clave API (opcional)"/>
+            <label class="small"><input type="checkbox" id="useLLM"/> Usar explicación avanzada</label>
+          </div>
+          <div class="code small">Nota: Este demo no llama a ningún servicio por defecto. Si marcas “Usar explicación avanzada”, la app intentará POST a un endpoint compatible con OpenAI en <span class="kbd">/v1/chat/completions</span> usando tu clave. Puedes editar el código para apuntar a tu proveedor.</div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const $ = (s)=>document.querySelector(s);
+    const api = {
+      async wikcionario(term){
+        // Llama a la API de MediaWiki para obtener wikitexto y extraer definiciones (# ...)
+        const title = encodeURIComponent(term.trim());
+        const url = `https://es.wiktionary.org/w/api.php?action=parse&page=${title}&prop=wikitext&formatversion=2&format=json&origin=*`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('Error al contactar Wikcionario');
+        const data = await res.json();
+        if(!data.parse || !data.parse.wikitext) return [];
+        const text = data.parse.wikitext;
+        const lines = text.split(/\n/);
+        // Saca definiciones que empiezan con "# " pero evita ejemplos marcados con ":"
+        const defs = lines
+          .filter(l=>/^#\s(?!:)/.test(l))
+          .map(l=>l.replace(/^#\s*/,''))
+          .map(cleanWiki)
+          .filter(Boolean)
+          .slice(0,8);
+        return defs;
+      }
+    };
+
+    function cleanWiki(s){
+      // Quita énfasis y enlaces [[...]]
+      return s
+        .replace(/''+/g,'')
+        .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,'$2')
+        .replace(/\[\[([^\]]+)\]\]/g,'$1')
+        .replace(/\{\{[^}]+\}\}/g,'')
+        .replace(/\([^)]*\)/g,'')
+        .replace(/\s+/g,' ')
+        .trim();
+    }
+
+    function simpleExplain(term, defs, nivel){
+      // Genera una explicación suave basada en definiciones + plantillas
+      const t = term.trim();
+      if(!defs.length) return `No encontré una definición clara para «${t}». Intenta con otra forma o un sinónimo.`;
+      const base = defs[0];
+      const simpleMap = [
+        [/^acción de /i, 'Es la acción de '],
+        [/^persona que /i, 'Se dice de alguien que '],
+        [/^cosa que /i, 'Es una cosa que ']
+      ];
+      let exp = base;
+      for(const [re, repl] of simpleMap){ exp = exp.replace(re, repl); }
+      // Nivel
+      if(nivel === 'basico'){
+        exp = exp
+          .replace(/utilizar/g,'usar')
+          .replace(/realizar/g,'hacer')
+          .replace(/mediante/g,'con')
+          .replace(/posible/g,'se puede')
+          .replace(/denominar/g,'llamar');
+      }
+      // Añade sinónimos simples si aparecen en defs posteriores
+      const hint = defs.slice(1,3).join('; ');
+      const hintShort = hint.split(/[.;]/).slice(0,2).join('; ').trim();
+      const extra = hintShort ? `\n\nTambién puede entenderse como: ${hintShort}.` : '';
+      return `«${t}»: ${exp}.${extra}`;
+    }
+
+    function exampleFrom(defs, term){
+      const t = term.trim();
+      const d = defs[0] || '';
+      // Genera un ejemplo básico
+      const ex = `Ayer me quedé ${t} mientras escuchaba música.`; // fallback
+      if(/verbo/i.test(d) || /acción/i.test(d)) return ex;
+      return `Ese ${t} es muy útil en esta situación.`;
+    }
+
+    async function run(kind){
+      const q = $('#q').value.trim();
+      if(!q){ $('#status').textContent = 'escribe algo'; return; }
+      $('#status').textContent = 'buscando…';
+      try{
+        const term = q.split(/\s+/)[0]; // usa la primera palabra como entrada
+        const defs = await api.wikcionario(term);
+        if(kind === 'def' || kind === 'both'){
+          $('#defs').innerHTML = defs.length ? `<ol>${defs.map(d=>`<li>${d}</li>`).join('')}</ol>` : '<span class="muted">Sin definiciones encontradas.</span>';
+        }
+        if(kind === 'exp' || kind === 'both'){
+          const nivel = $('#nivel').value;
+          const exp = simpleExplain(term, defs, nivel);
+          $('#exp').textContent = exp;
+        }
+        if(kind === 'ej'){
+          const ex = exampleFrom(defs, term);
+          $('#exp').textContent = ex;
+        }
+        $('#status').textContent = 'listo';
+      }catch(err){
+        console.error(err);
+        $('#status').textContent = 'error';
+        $('#defs').innerHTML = `<span class="muted">No se pudo obtener el Wikcionario.</span>`;
+      }
+    }
+
+    $('#btn-def').addEventListener('click', ()=>run('def'));
+    $('#btn-exp').addEventListener('click', ()=>run('exp'));
+    $('#btn-both').addEventListener('click', ()=>run('both'));
+    $('#btn-ej').addEventListener('click', ()=>run('ej'));
+
+    // Leer ?q= del URL (para compartir desde otras apps / accesos directos)
+    const params = new URLSearchParams(location.search);
+    const initQ = params.get('q');
+    if(initQ){ $('#q').value = initQ; run('both'); }
+
+    // --- Opcional: explicación avanzada vía endpoint compatible con OpenAI ---
+    async function llmExplain(prompt){
+      const key = localStorage.getItem('explica_api_key') || $('#apiKey').value.trim();
+      if(!key) return null;
+      const body = {
+        model: 'gpt-4o-mini',
+        messages: [
+          {role:'system', content:'Eres un asistente que explica palabras y frases en español claro, con ejemplos sencillos. No traduzcas al inglés.'},
+          {role:'user', content: prompt}
+        ],
+        temperature: 0.4
+      };
+      const res = await fetch('https://api.openai.com/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) return null;
+      const data = await res.json();
+      const txt = data.choices?.[0]?.message?.content?.trim();
+      return txt || null;
+    }
+
+    // Guarda/recupera la clave localmente
+    const keyInput = $('#apiKey');
+    keyInput.value = localStorage.getItem('explica_api_key') || '';
+    keyInput.addEventListener('change', ()=>{
+      localStorage.setItem('explica_api_key', keyInput.value.trim());
+    });
+
+    $('#useLLM').addEventListener('change', async (e)=>{
+      if(e.target.checked){
+        const q = $('#q').value.trim();
+        if(!q) return;
+        const defs = await api.wikcionario(q.split(/\s+/)[0]);
+        const nivel = $('#nivel').value === 'basico' ? 'básico' : 'intermedio';
+        const prompt = `Explica en español ${nivel} la palabra o frase «${q}». Usa definiciones de referencia (si procede): ${defs.slice(0,5).join('; ')}. Da 1-2 ejemplos.`;
+        const txt = await llmExplain(prompt);
+        if(txt){ $('#exp').textContent = txt; $('#status').textContent = 'listo'; }
+        else { $('#exp').textContent = 'No se pudo obtener explicación avanzada.'; }
+      }
+    });
+  </script>
+</body>
+</html>
